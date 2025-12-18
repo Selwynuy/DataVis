@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, use } from 'react';
 import LeftSidebar, { FilterState } from '@/components/LeftSidebar';
 import KPICards from '@/components/KPICards';
 import BehaviorHeatmap from '@/components/BehaviorHeatmap';
@@ -21,7 +21,16 @@ import {
 } from '@/lib/dataLoader';
 import type { IntrusionData } from '@/lib/dataLoader';
 
-export default function Home() {
+export default function Home({
+  params,
+  searchParams,
+}: {
+  params: Promise<Record<string, string | string[]>>;
+  searchParams: Promise<Record<string, string | string[]>>;
+}) {
+  // Unwrap params and searchParams (Next.js 15+ requirement)
+  use(params);
+  use(searchParams);
   const [intrusionData, setIntrusionData] = useState<IntrusionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
@@ -123,7 +132,7 @@ export default function Home() {
   }
 
   return (
-    <div className="h-screen flex overflow-hidden bg-slate-950 text-slate-50">
+    <div className="min-h-screen bg-slate-950 text-slate-50">
       {/* Left Sidebar - global filters */}
       <LeftSidebar
         filters={filters}
@@ -132,10 +141,10 @@ export default function Home() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
-      {/* Main Content - 3-row banded layout: header with visible KPIs, analytic grid, footer (~20% height) */}
-      <main className="flex-1 grid grid-rows-[auto,1fr,20vh] min-h-0 border-l border-slate-900">
+      {/* Main Content - 3-row banded layout: header with visible KPIs, analytic grid, footer */}
+      <main className={`flex flex-col border-l border-slate-900 transition-all duration-300 ${sidebarCollapsed ? 'ml-12' : 'ml-64'}`}>
         {/* Band A: Header / KPIs - auto height to ensure visibility */}
-        <header className="flex items-center justify-between gap-3 px-3 py-2 border-b border-slate-800 bg-slate-950/80 min-h-[80px]">
+        <header className="flex items-center justify-between gap-3 px-3 py-2 border-b border-slate-800 bg-slate-950/80 min-h-[80px] flex-shrink-0">
           <div className="flex-1 min-w-0">
             <KPICards
               totalSessions={kpis.totalSessions}
@@ -155,31 +164,30 @@ export default function Home() {
         </header>
 
         {/* Band A/B: Main analytic grid - true bento box layout, each card has independent height */}
-        <section className="px-3 py-1.5 min-h-0">
-          <div className="grid grid-cols-4 gap-3" style={{ gridAutoRows: 'min-content', alignContent: 'start' }}>
+        <section className="px-3 pt-1.5">
+          <div className="grid grid-cols-12 gap-3" style={{ gridAutoRows: 'min-content', alignContent: 'start' }}>
             {/* Each card has its own height - no row stretching */}
-            <div className="col-span-2 rounded-lg border border-slate-800 bg-slate-950/70 p-2 min-w-0">
+            <div className="col-span-6 rounded-lg border border-slate-800 bg-slate-950/70 p-2 min-w-0">
               <BehaviorHeatmap data={behaviorBuckets} />
             </div>
-            <div className="col-span-2 rounded-lg border border-slate-800 bg-slate-950/70 p-2 min-w-0">
-              <ProtocolAttackChart data={protocolStats} />
-            </div>
-
-            <div className="col-span-2 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0">
+            <div className="col-span-6 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0">
               <EncryptionAttackChart data={encryptionStats} />
             </div>
-            <div className="col-span-1 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0">
+            <div className="col-span-4 rounded-lg border border-slate-800 bg-slate-950/70 p-2 min-w-0 mb-2">
+              <ProtocolAttackChart data={protocolStats} />
+            </div>
+            <div className="col-span-4 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0 mb-2">
               <BrowserAttackChart data={browserStats} />
             </div>
-            <div className="col-span-1 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0">
+            <div className="col-span-4 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0 mb-2">
               <ReputationChart data={reputationBuckets} />
             </div>
           </div>
         </section>
 
-        {/* Band C: triage & status (clamped to ~20% viewport height) */}
-        <footer className="border-t border-slate-800 bg-slate-950/90 px-3 py-1.5 grid grid-rows-[1fr,auto] min-h-0 h-[20vh] overflow-hidden">
-          <div className="overflow-y-auto pr-1">
+        {/* Band C: triage & status */}
+        <footer className="border-t border-slate-800 bg-slate-950/90 px-3 py-1.5 mt-2">
+          <div className="pr-1">
             <SuspiciousSessionsTable data={suspiciousSessions} />
           </div>
           <div className="flex items-center justify-between gap-2 pt-1.5 text-[11px] text-slate-500">

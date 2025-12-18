@@ -27,11 +27,11 @@ export default function ReputationChart({ data }: ReputationChartProps) {
 
       <div className="flex flex-col gap-2">
         {/* Scaled down for better viewport fit */}
-        <div className="h-24 md:h-28 lg:h-32">
+        <div className="h-48 md:h-56 lg:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={data}
-              margin={{ top: 5, right: 10, left: -10, bottom: 0 }}
+              margin={{ top: 5, right: 20, left: 10, bottom: 85 }}
             >
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.25)" />
               <XAxis
@@ -42,8 +42,8 @@ export default function ReputationChart({ data }: ReputationChartProps) {
                 axisLine={false}
                 label={{
                   value: 'IP Reputation Score',
-                  position: 'insideBottom',
-                  offset: -5,
+                  position: 'bottom',
+                  offset: 28,
                   style: { fontSize: 11, fill: '#94a3b8' }
                 }}
               />
@@ -56,7 +56,8 @@ export default function ReputationChart({ data }: ReputationChartProps) {
                 label={{
                   value: 'Attack Rate (%)',
                   angle: -90,
-                  position: 'insideLeft',
+                  position: 'left',
+                  offset: 5,
                   style: { fontSize: 11, fill: '#94a3b8' }
                 }}
               />
@@ -68,9 +69,10 @@ export default function ReputationChart({ data }: ReputationChartProps) {
                 tickLine={false}
                 axisLine={false}
                 label={{
-                  value: 'Sessions',
+                  value: 'Total Sessions',
                   angle: 90,
-                  position: 'insideRight',
+                  position: 'right',
+                  offset: 5,
                   style: { fontSize: 11, fill: '#94a3b8' }
                 }}
               />
@@ -91,12 +93,17 @@ export default function ReputationChart({ data }: ReputationChartProps) {
                 }}
               />
               <Legend
-                wrapperStyle={{ fontSize: 12 }}
+                wrapperStyle={{ fontSize: 12, paddingTop: '8px', paddingBottom: '15px', display: 'flex', justifyContent: 'center', gap: '20px' }}
+                iconType="line"
                 formatter={(value: string) => {
                   if (value === 'attackRate') return 'Attack Rate (%)';
                   if (value === 'sessionCount') return 'Total Sessions';
                   return value;
                 }}
+                layout="horizontal"
+                verticalAlign="bottom"
+                align="center"
+                iconSize={12}
               />
               <Area
                 yAxisId="right"

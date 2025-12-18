@@ -26,7 +26,7 @@ export default function BrowserAttackChart({ data }: BrowserAttackChartProps) {
 
       <div className="flex flex-col gap-2">
         {/* Scaled down for better viewport fit */}
-        <div className="h-24 md:h-28 lg:h-32">
+        <div className="h-48 md:h-56 lg:h-64">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
@@ -85,15 +85,15 @@ export default function BrowserAttackChart({ data }: BrowserAttackChartProps) {
         </div>
 
         {/* Browser Summary */}
-        <div className="pt-2 border-t border-slate-800/80 overflow-y-auto max-h-20">
-          <div className="grid grid-cols-3 gap-2">
+        <div className="pt-3 pb-2 border-t border-slate-800/80">
+          <div className="flex flex-wrap items-center justify-center gap-x-4 gap-y-2">
             {data.map(item => (
-              <div key={item.browser} className="flex flex-col text-center">
-                <span className="text-[11px] font-medium text-slate-300">
+              <div key={item.browser} className="flex items-center gap-1.5 px-2 py-1 rounded bg-slate-900/50 border border-slate-800/50">
+                <span className="text-[11px] font-semibold text-slate-200">
                   {item.browser}
                 </span>
-                <span className="text-[11px] text-slate-400">
-                  {item.sessionCount.toLocaleString()} sessions
+                <span className="text-[10px] text-slate-400">
+                  {item.sessionCount.toLocaleString()}
                 </span>
               </div>
             ))}

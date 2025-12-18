@@ -52,7 +52,7 @@ export default function LeftSidebar({ filters, onFilterChange, isCollapsed, onTo
 
   if (isCollapsed) {
     return (
-      <div className="w-12 bg-slate-900 border-r border-slate-800 flex flex-col items-center py-3">
+      <div className="fixed left-0 top-0 h-screen w-12 bg-slate-900 border-r border-slate-800 flex flex-col items-center py-3 z-10">
         <Button
           variant="ghost"
           size="sm"
@@ -67,7 +67,7 @@ export default function LeftSidebar({ filters, onFilterChange, isCollapsed, onTo
   }
 
   return (
-    <div className="w-64 bg-slate-900 border-r border-slate-800 flex flex-col overflow-y-auto">
+    <div className="fixed left-0 top-0 h-screen w-64 bg-slate-900 border-r border-slate-800 flex flex-col overflow-y-auto z-10">
       {/* Branding Header */}
       <div className="p-4 border-b border-slate-800">
         <div className="flex items-center justify-between mb-3">
@@ -261,9 +261,9 @@ export default function LeftSidebar({ filters, onFilterChange, isCollapsed, onTo
       {/* Reset Button */}
       <div className="p-3 border-t border-slate-800">
         <Button
-          variant="outline"
+          variant="ghost"
           size="sm"
-          className="w-full text-xs"
+          className="w-full text-xs text-slate-300 hover:bg-slate-900/80 hover:text-slate-100 active:bg-slate-900 cursor-pointer transition-colors"
           onClick={() => onFilterChange({
             attackOutcome: 'all',
             timeOfAccess: 'all',

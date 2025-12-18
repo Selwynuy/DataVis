@@ -57,16 +57,16 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
   };
 
   const getReputationBadge = (score: number) => {
-    if (score < 0.3) return { label: 'High Risk', color: 'bg-red-100 text-red-700 border-red-200' };
-    if (score < 0.7) return { label: 'Medium', color: 'bg-yellow-100 text-yellow-700 border-yellow-200' };
-    return { label: 'Low Risk', color: 'bg-green-100 text-green-700 border-green-200' };
+    if (score < 0.3) return { label: 'High Risk', color: 'bg-red-900/60 text-red-300 border-red-800' };
+    if (score < 0.7) return { label: 'Medium', color: 'bg-yellow-900/60 text-yellow-300 border-yellow-800' };
+    return { label: 'Low Risk', color: 'bg-green-900/60 text-green-300 border-green-800' };
   };
 
   const getRiskColor = (score: number) => {
-    if (score >= 70) return 'text-red-600';
-    if (score >= 50) return 'text-orange-600';
-    if (score >= 30) return 'text-yellow-600';
-    return 'text-green-600';
+    if (score >= 70) return 'text-red-400';
+    if (score >= 50) return 'text-orange-400';
+    if (score >= 30) return 'text-yellow-400';
+    return 'text-green-400';
   };
 
   return (
@@ -178,20 +178,20 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
               </div>
               <div className="flex gap-1">
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={handlePreviousPage}
                   disabled={currentPage === 1}
-                  className="h-7 px-2"
+                  className="h-7 px-2 text-slate-300 hover:bg-slate-900/80 hover:text-slate-100 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                 >
                   <ChevronLeft className="w-3 h-3" />
                 </Button>
                 <Button
-                  variant="outline"
+                  variant="ghost"
                   size="sm"
                   onClick={handleNextPage}
                   disabled={currentPage === totalPages}
-                  className="h-7 px-2"
+                  className="h-7 px-2 text-slate-300 hover:bg-slate-900/80 hover:text-slate-100 disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                 >
                   <ChevronRight className="w-3 h-3" />
                 </Button>
@@ -203,33 +203,33 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
 
       {/* Session Detail Drawer */}
       <Sheet open={!!selectedSession} onOpenChange={() => setSelectedSession(null)}>
-        <SheetContent className="w-[500px] sm:w-[600px] overflow-y-auto">
+        <SheetContent className="w-[500px] sm:w-[600px] overflow-y-auto bg-slate-950 border-slate-800 [&>button]:text-slate-400 [&>button]:hover:text-slate-100 [&>button]:hover:bg-slate-800">
           {selectedSession && (
             <>
               <SheetHeader>
-                <SheetTitle className="flex items-center gap-2">
-                  <Shield className="w-5 h-5" />
+                <SheetTitle className="flex items-center gap-2 text-slate-100">
+                  <Shield className="w-5 h-5 text-blue-400" />
                   Session Details
                 </SheetTitle>
-                <SheetDescription>
-                  Session ID: <span className="font-mono">{selectedSession.sessionId}</span>
+                <SheetDescription className="text-slate-400">
+                  Session ID: <span className="font-mono text-slate-300">{selectedSession.sessionId}</span>
                 </SheetDescription>
               </SheetHeader>
 
               <div className="mt-6 space-y-6">
                 {/* Status Card */}
-                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="p-4 bg-slate-900/60 rounded-lg border border-slate-800">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-slate-900">Status & Risk</h3>
+                    <h3 className="font-semibold text-slate-100">Status & Risk</h3>
                     {selectedSession.attackDetected ? (
-                      <Badge className="bg-red-100 text-red-700 border-0">Attack Detected</Badge>
+                      <Badge className="bg-red-900/60 text-red-300 border-0">Attack Detected</Badge>
                     ) : (
-                      <Badge className="bg-green-100 text-green-700 border-0">Clean Session</Badge>
+                      <Badge className="bg-emerald-900/60 text-emerald-300 border-0">Clean Session</Badge>
                     )}
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600">Risk Score</span>
+                      <span className="text-slate-400">Risk Score</span>
                       <span className={`font-bold ${getRiskColor(selectedSession.riskScore)}`}>
                         {selectedSession.riskScore.toFixed(1)} / 100
                       </span>
@@ -238,31 +238,31 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
                 </div>
 
                 {/* Behavior Summary */}
-                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                  <h3 className="font-semibold text-slate-900 mb-3">Behavior Summary</h3>
+                <div className="p-4 bg-slate-900/60 rounded-lg border border-slate-800">
+                  <h3 className="font-semibold text-slate-100 mb-3">Behavior Summary</h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <p className="text-xs text-slate-600">Login Attempts</p>
-                      <p className="text-lg font-bold text-slate-900">{selectedSession.loginAttempts}</p>
+                      <p className="text-xs text-slate-400">Login Attempts</p>
+                      <p className="text-lg font-bold text-slate-100">{selectedSession.loginAttempts}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-slate-600">Failed Logins</p>
-                      <p className="text-lg font-bold text-red-600">{selectedSession.failedLogins}</p>
+                      <p className="text-xs text-slate-400">Failed Logins</p>
+                      <p className="text-lg font-bold text-red-400">{selectedSession.failedLogins}</p>
                     </div>
                     <div>
-                      <p className="text-xs text-slate-600">Session Duration</p>
-                      <p className="text-lg font-bold text-slate-900">{selectedSession.sessionDuration.toFixed(1)}s</p>
+                      <p className="text-xs text-slate-400">Session Duration</p>
+                      <p className="text-lg font-bold text-slate-100">{selectedSession.sessionDuration.toFixed(1)}s</p>
                     </div>
                     <div>
-                      <p className="text-xs text-slate-600">Time Access</p>
+                      <p className="text-xs text-slate-400">Time Access</p>
                       <div className="flex items-center gap-1">
                         {selectedSession.unusualTimeAccess ? (
                           <>
-                            <Clock className="w-4 h-4 text-purple-600" />
-                            <span className="text-sm font-semibold text-purple-600">Off-Hours</span>
+                            <Clock className="w-4 h-4 text-purple-400" />
+                            <span className="text-sm font-semibold text-purple-400">Off-Hours</span>
                           </>
                         ) : (
-                          <span className="text-sm font-semibold text-green-600">Business Hours</span>
+                          <span className="text-sm font-semibold text-emerald-400">Business Hours</span>
                         )}
                       </div>
                     </div>
@@ -270,35 +270,35 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
                 </div>
 
                 {/* Technical Summary */}
-                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                  <h3 className="font-semibold text-slate-900 mb-3">Technical Summary</h3>
+                <div className="p-4 bg-slate-900/60 rounded-lg border border-slate-800">
+                  <h3 className="font-semibold text-slate-100 mb-3">Technical Summary</h3>
                   <div className="space-y-3">
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Protocol</span>
-                      <Badge variant="outline">{selectedSession.protocolType}</Badge>
+                      <span className="text-sm text-slate-400">Protocol</span>
+                      <Badge variant="outline" className="border-slate-700 text-slate-300">{selectedSession.protocolType}</Badge>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Encryption</span>
+                      <span className="text-sm text-slate-400">Encryption</span>
                       <Badge
                         variant="outline"
-                        className={selectedSession.encryptionUsed === 'AES' ? 'border-green-300' : 'border-orange-300'}
+                        className={selectedSession.encryptionUsed === 'AES' ? 'border-emerald-700 text-emerald-300' : 'border-orange-700 text-orange-300'}
                       >
                         {selectedSession.encryptionUsed}
                       </Badge>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Browser</span>
-                      <Badge variant="outline">{selectedSession.browserType}</Badge>
+                      <span className="text-sm text-slate-400">Browser</span>
+                      <Badge variant="outline" className="border-slate-700 text-slate-300">{selectedSession.browserType}</Badge>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">Packet Size</span>
-                      <span className="text-sm font-semibold text-slate-900">
+                      <span className="text-sm text-slate-400">Packet Size</span>
+                      <span className="text-sm font-semibold text-slate-100">
                         {selectedSession.networkPacketSize.toLocaleString()} bytes
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-sm text-slate-600">IP Reputation Score</span>
-                      <Badge variant="outline" className={getReputationBadge(selectedSession.ipReputationScore).color}>
+                      <span className="text-sm text-slate-400">IP Reputation Score</span>
+                      <Badge variant="outline" className={`border-slate-700 ${getReputationBadge(selectedSession.ipReputationScore).color}`}>
                         {selectedSession.ipReputationScore.toFixed(3)}
                       </Badge>
                     </div>
@@ -306,37 +306,37 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
                 </div>
 
                 {/* Risk Factors */}
-                <div className="p-4 bg-slate-50 rounded-lg border border-slate-200">
-                  <h3 className="font-semibold text-slate-900 mb-3">Risk Factors</h3>
+                <div className="p-4 bg-slate-900/60 rounded-lg border border-slate-800">
+                  <h3 className="font-semibold text-slate-100 mb-3">Risk Factors</h3>
                   <div className="space-y-2">
                     {selectedSession.ipReputationScore < 0.3 && (
                       <div className="flex items-start gap-2 text-sm">
-                        <AlertCircle className="w-4 h-4 text-red-600 mt-0.5" />
-                        <span className="text-slate-700">Low IP reputation score (&lt;0.3)</span>
+                        <AlertCircle className="w-4 h-4 text-red-400 mt-0.5" />
+                        <span className="text-slate-300">Low IP reputation score (&lt;0.3)</span>
                       </div>
                     )}
                     {selectedSession.failedLogins >= 3 && (
                       <div className="flex items-start gap-2 text-sm">
-                        <AlertCircle className="w-4 h-4 text-red-600 mt-0.5" />
-                        <span className="text-slate-700">Multiple failed login attempts</span>
+                        <AlertCircle className="w-4 h-4 text-red-400 mt-0.5" />
+                        <span className="text-slate-300">Multiple failed login attempts</span>
                       </div>
                     )}
                     {selectedSession.unusualTimeAccess && (
                       <div className="flex items-start gap-2 text-sm">
-                        <AlertCircle className="w-4 h-4 text-purple-600 mt-0.5" />
-                        <span className="text-slate-700">Access during off-hours</span>
+                        <AlertCircle className="w-4 h-4 text-purple-400 mt-0.5" />
+                        <span className="text-slate-300">Access during off-hours</span>
                       </div>
                     )}
                     {(selectedSession.encryptionUsed === 'DES' || selectedSession.encryptionUsed === 'None') && (
                       <div className="flex items-start gap-2 text-sm">
-                        <Lock className="w-4 h-4 text-orange-600 mt-0.5" />
-                        <span className="text-slate-700">Weak or no encryption</span>
+                        <Lock className="w-4 h-4 text-orange-400 mt-0.5" />
+                        <span className="text-slate-300">Weak or no encryption</span>
                       </div>
                     )}
                     {selectedSession.loginAttempts > 5 && (
                       <div className="flex items-start gap-2 text-sm">
-                        <AlertCircle className="w-4 h-4 text-yellow-600 mt-0.5" />
-                        <span className="text-slate-700">Excessive login attempts (&gt;5)</span>
+                        <AlertCircle className="w-4 h-4 text-yellow-400 mt-0.5" />
+                        <span className="text-slate-300">Excessive login attempts (&gt;5)</span>
                       </div>
                     )}
                   </div>
