@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { AlertCircle, Shield, Clock, Lock, X, ChevronLeft, ChevronRight } from 'lucide-react';
+import { AlertCircle, Shield, Clock, Lock, X, ChevronLeft, ChevronRight, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react';
 import {
   Sheet,
   SheetContent,
@@ -33,20 +33,88 @@ interface SuspiciousSessionsTableProps {
   limit?: number;
 }
 
+type SortField = keyof SuspiciousSession | 'failedLogins';
+type SortDirection = 'asc' | 'desc' | null;
+
 export default function SuspiciousSessionsTable({ data, limit = 20 }: SuspiciousSessionsTableProps) {
   const [selectedSession, setSelectedSession] = useState<SuspiciousSession | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [sortField, setSortField] = useState<SortField | null>(null);
+  const [sortDirection, setSortDirection] = useState<SortDirection>(null);
   const itemsPerPage = limit;
 
-  const totalPages = Math.ceil(data.length / itemsPerPage);
+  const handleSort = (field: SortField) => {
+    if (sortField === field) {
+      if (sortDirection === 'asc') {
+        setSortDirection('desc');
+      } else if (sortDirection === 'desc') {
+        setSortField(null);
+        setSortDirection(null);
+      } else {
+        setSortDirection('asc');
+      }
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+    setCurrentPage(1);
+  };
+
+  const sortedData = [...data].sort((a, b) => {
+    if (!sortField || !sortDirection) return 0;
+
+    let aValue: any;
+    let bValue: any;
+
+    if (sortField === 'failedLogins') {
+      aValue = a.failedLogins;
+      bValue = b.failedLogins;
+    } else {
+      aValue = a[sortField];
+      bValue = b[sortField];
+    }
+
+    if (typeof aValue === 'string' && typeof bValue === 'string') {
+      return sortDirection === 'asc' 
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
+    }
+
+    if (typeof aValue === 'number' && typeof bValue === 'number') {
+      return sortDirection === 'asc' ? aValue - bValue : bValue - aValue;
+    }
+
+    if (typeof aValue === 'boolean' && typeof bValue === 'boolean') {
+      return sortDirection === 'asc' 
+        ? (aValue === bValue ? 0 : aValue ? 1 : -1)
+        : (aValue === bValue ? 0 : aValue ? -1 : 1);
+    }
+
+    return 0;
+  });
+
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
-  const displayData = data.slice(startIndex, endIndex);
+  const displayData = sortedData.slice(startIndex, endIndex);
 
   // Reset to page 1 when data changes
   useEffect(() => {
     setCurrentPage(1);
   }, [data.length]);
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortField !== field) {
+      return <ArrowUpDown className="w-3 h-3 ml-1 opacity-50" />;
+    }
+    if (sortDirection === 'asc') {
+      return <ArrowUp className="w-3 h-3 ml-1" />;
+    }
+    if (sortDirection === 'desc') {
+      return <ArrowDown className="w-3 h-3 ml-1" />;
+    }
+    return <ArrowUpDown className="w-3 h-3 ml-1 opacity-50" />;
+  };
 
   const handlePreviousPage = () => {
     setCurrentPage(prev => Math.max(1, prev - 1));
@@ -91,15 +159,87 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
             <table className="w-full text-[11px] text-slate-100">
               <thead>
                 <tr className="border-b border-slate-800/80">
-                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Session ID</th>
-                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Status</th>
-                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Risk</th>
-                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Protocol</th>
-                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Browser</th>
-                  <th className="text-center py-1.5 px-2 font-medium text-slate-300">Login / Failed</th>
-                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Encryption</th>
-                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">IP Rep</th>
-                  <th className="text-center py-1.5 px-2 font-medium text-slate-300">Time</th>
+                  <th 
+                    className="text-left py-1.5 px-2 font-medium text-slate-300 cursor-pointer hover:text-slate-100 select-none"
+                    onClick={() => handleSort('sessionId')}
+                  >
+                    <div className="flex items-center">
+                      Session ID
+                      <SortIcon field="sessionId" />
+                    </div>
+                  </th>
+                  <th 
+                    className="text-left py-1.5 px-2 font-medium text-slate-300 cursor-pointer hover:text-slate-100 select-none"
+                    onClick={() => handleSort('attackDetected')}
+                  >
+                    <div className="flex items-center">
+                      Status
+                      <SortIcon field="attackDetected" />
+                    </div>
+                  </th>
+                  <th 
+                    className="text-left py-1.5 px-2 font-medium text-slate-300 cursor-pointer hover:text-slate-100 select-none"
+                    onClick={() => handleSort('riskScore')}
+                  >
+                    <div className="flex items-center">
+                      Risk
+                      <SortIcon field="riskScore" />
+                    </div>
+                  </th>
+                  <th 
+                    className="text-left py-1.5 px-2 font-medium text-slate-300 cursor-pointer hover:text-slate-100 select-none"
+                    onClick={() => handleSort('protocolType')}
+                  >
+                    <div className="flex items-center">
+                      Protocol
+                      <SortIcon field="protocolType" />
+                    </div>
+                  </th>
+                  <th 
+                    className="text-left py-1.5 px-2 font-medium text-slate-300 cursor-pointer hover:text-slate-100 select-none"
+                    onClick={() => handleSort('browserType')}
+                  >
+                    <div className="flex items-center">
+                      Browser
+                      <SortIcon field="browserType" />
+                    </div>
+                  </th>
+                  <th 
+                    className="text-center py-1.5 px-2 font-medium text-slate-300 cursor-pointer hover:text-slate-100 select-none"
+                    onClick={() => handleSort('failedLogins')}
+                  >
+                    <div className="flex items-center justify-center">
+                      Login / Failed
+                      <SortIcon field="failedLogins" />
+                    </div>
+                  </th>
+                  <th 
+                    className="text-left py-1.5 px-2 font-medium text-slate-300 cursor-pointer hover:text-slate-100 select-none"
+                    onClick={() => handleSort('encryptionUsed')}
+                  >
+                    <div className="flex items-center">
+                      Encryption
+                      <SortIcon field="encryptionUsed" />
+                    </div>
+                  </th>
+                  <th 
+                    className="text-left py-1.5 px-2 font-medium text-slate-300 cursor-pointer hover:text-slate-100 select-none"
+                    onClick={() => handleSort('ipReputationScore')}
+                  >
+                    <div className="flex items-center">
+                      IP Rep
+                      <SortIcon field="ipReputationScore" />
+                    </div>
+                  </th>
+                  <th 
+                    className="text-center py-1.5 px-2 font-medium text-slate-300 cursor-pointer hover:text-slate-100 select-none"
+                    onClick={() => handleSort('unusualTimeAccess')}
+                  >
+                    <div className="flex items-center justify-center">
+                      Time
+                      <SortIcon field="unusualTimeAccess" />
+                    </div>
+                  </th>
                 </tr>
               </thead>
               <tbody>
@@ -174,7 +314,7 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
           {totalPages > 1 && (
             <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/80 text-[11px]">
               <div className="text-slate-400">
-                Page {currentPage} of {totalPages} ({startIndex + 1}-{Math.min(endIndex, data.length)} of {data.length})
+                Page {currentPage} of {totalPages} ({startIndex + 1}-{Math.min(endIndex, sortedData.length)} of {sortedData.length})
               </div>
               <div className="flex gap-1">
                 <Button

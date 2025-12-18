@@ -1,6 +1,7 @@
 'use client';
 
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ComposedChart } from 'recharts';
+import { useState } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ComposedChart, Dot } from 'recharts';
 
 interface ReputationBucket {
   bucket: string;
@@ -13,9 +14,12 @@ interface ReputationBucket {
 
 interface ReputationChartProps {
   data: ReputationBucket[];
+  selectedRiskLevel?: 'high' | 'medium' | 'low' | null;
+  onRiskLevelClick?: (riskLevel: 'high' | 'medium' | 'low' | null) => void;
 }
 
-export default function ReputationChart({ data }: ReputationChartProps) {
+export default function ReputationChart({ data, selectedRiskLevel = null, onRiskLevelClick }: ReputationChartProps) {
+  const [hoveredBucket, setHoveredBucket] = useState<string | null>(null);
   return (
     <div className="flex flex-col">
       <h3 className="text-base font-semibold text-slate-200 mb-1">
@@ -78,18 +82,25 @@ export default function ReputationChart({ data }: ReputationChartProps) {
               />
               <Tooltip
                 cursor={{ fill: 'rgba(148,163,184,0.08)' }}
-                contentStyle={{
-                  backgroundColor: '#020617',
-                  border: '1px solid #1e293b',
-                  borderRadius: 6,
-                  fontSize: 12,
-                  color: '#e2e8f0'
-                }}
-                formatter={(value: number | undefined, name: string | undefined) => {
-                  if (value === undefined || name === undefined) return ['', name || ''];
-                  if (name === 'attackRate') return [`${value.toFixed(1)}%`, 'Attack Rate'];
-                  if (name === 'sessionCount') return [value, 'Sessions'];
-                  return [value, name];
+                content={({ active, payload, label }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs">
+                      <div className="font-semibold text-slate-100 mb-1">{label}</div>
+                      {payload.map((entry: any, index: number) => {
+                        const name = entry.dataKey === 'attackRate' ? 'Attack Rate' : 'Sessions';
+                        const value = entry.dataKey === 'attackRate' 
+                          ? `${entry.value.toFixed(1)}%` 
+                          : entry.value.toLocaleString();
+                        return (
+                          <div key={index} className="text-slate-300 leading-tight">
+                            {name}: {value}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
                 }}
               />
               <Legend
@@ -120,8 +131,36 @@ export default function ReputationChart({ data }: ReputationChartProps) {
                 dataKey="attackRate"
                 stroke="#ef4444"
                 strokeWidth={3}
-                dot={{ fill: '#ef4444', r: 3 }}
+                dot={(props: any) => {
+                  const bucket = props.payload?.bucket || '';
+                  const isHighRisk = props.payload?.min < 0.3;
+                  const isMediumRisk = props.payload?.min >= 0.3 && props.payload?.min < 0.7;
+                  const isLowRisk = props.payload?.min >= 0.7;
+                  const isSelected = 
+                    (selectedRiskLevel === 'high' && isHighRisk) ||
+                    (selectedRiskLevel === 'medium' && isMediumRisk) ||
+                    (selectedRiskLevel === 'low' && isLowRisk);
+                  const isHovered = hoveredBucket === bucket;
+                  
+                  return (
+                    <Dot
+                      {...props}
+                      fill={isSelected ? '#f87171' : '#ef4444'}
+                      r={isHovered || isSelected ? 5 : 3}
+                      style={{ cursor: 'pointer', transition: 'r 0.2s' }}
+                      onClick={() => {
+                        if (isHighRisk) onRiskLevelClick?.('high');
+                        else if (isMediumRisk) onRiskLevelClick?.('medium');
+                        else if (isLowRisk) onRiskLevelClick?.('low');
+                      }}
+                      onMouseEnter={() => setHoveredBucket(bucket)}
+                      onMouseLeave={() => setHoveredBucket(null)}
+                    />
+                  );
+                }}
                 name="attackRate"
+                onMouseEnter={(data: any) => setHoveredBucket(data?.payload?.bucket || null)}
+                onMouseLeave={() => setHoveredBucket(null)}
               />
             </ComposedChart>
           </ResponsiveContainer>
@@ -129,8 +168,18 @@ export default function ReputationChart({ data }: ReputationChartProps) {
 
         {/* Risk Bands */}
         <div className="pt-2 border-t border-slate-800/80 text-[11px] grid grid-cols-3 gap-2">
-          <div className="flex flex-col p-2 bg-red-950/40 border border-red-500/40 rounded">
-            <span className="font-medium text-red-200">High Risk (0.0-0.3)</span>
+          <div 
+            onClick={() => onRiskLevelClick?.(selectedRiskLevel === 'high' ? null : 'high')}
+            className={`flex flex-col p-2 border rounded cursor-pointer transition-all ${
+              selectedRiskLevel === 'high'
+                ? 'bg-red-950/60 border-red-500/80'
+                : 'bg-red-950/40 border-red-500/40 hover:bg-red-950/50 hover:border-red-500/60'
+            }`}
+          >
+            <span className="font-medium text-red-200 flex items-center gap-1">
+              High Risk (0.0-0.3)
+              {selectedRiskLevel === 'high' && <span className="text-xs">✓</span>}
+            </span>
             <span className="text-xs font-bold text-red-300">
               {data
                 .filter(d => d.min < 0.3)
@@ -139,8 +188,18 @@ export default function ReputationChart({ data }: ReputationChartProps) {
               attacks
             </span>
           </div>
-          <div className="flex flex-col p-2 bg-yellow-950/40 border border-yellow-500/40 rounded">
-            <span className="font-medium text-yellow-200">Medium Risk (0.3-0.7)</span>
+          <div 
+            onClick={() => onRiskLevelClick?.(selectedRiskLevel === 'medium' ? null : 'medium')}
+            className={`flex flex-col p-2 border rounded cursor-pointer transition-all ${
+              selectedRiskLevel === 'medium'
+                ? 'bg-yellow-950/60 border-yellow-500/80'
+                : 'bg-yellow-950/40 border-yellow-500/40 hover:bg-yellow-950/50 hover:border-yellow-500/60'
+            }`}
+          >
+            <span className="font-medium text-yellow-200 flex items-center gap-1">
+              Medium Risk (0.3-0.7)
+              {selectedRiskLevel === 'medium' && <span className="text-xs">✓</span>}
+            </span>
             <span className="text-xs font-bold text-yellow-200">
               {data
                 .filter(d => d.min >= 0.3 && d.min < 0.7)
@@ -149,8 +208,18 @@ export default function ReputationChart({ data }: ReputationChartProps) {
               attacks
             </span>
           </div>
-          <div className="flex flex-col p-2 bg-emerald-950/40 border border-emerald-500/40 rounded">
-            <span className="font-medium text-emerald-200">Low Risk (0.7-1.0)</span>
+          <div 
+            onClick={() => onRiskLevelClick?.(selectedRiskLevel === 'low' ? null : 'low')}
+            className={`flex flex-col p-2 border rounded cursor-pointer transition-all ${
+              selectedRiskLevel === 'low'
+                ? 'bg-emerald-950/60 border-emerald-500/80'
+                : 'bg-emerald-950/40 border-emerald-500/40 hover:bg-emerald-950/50 hover:border-emerald-500/60'
+            }`}
+          >
+            <span className="font-medium text-emerald-200 flex items-center gap-1">
+              Low Risk (0.7-1.0)
+              {selectedRiskLevel === 'low' && <span className="text-xs">✓</span>}
+            </span>
             <span className="text-xs font-bold text-emerald-200">
               {data
                 .filter(d => d.min >= 0.7)

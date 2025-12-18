@@ -1,6 +1,7 @@
 'use client';
 
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { useState } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
 
 interface EncryptionData {
   encryption: string;
@@ -12,9 +13,12 @@ interface EncryptionData {
 
 interface EncryptionAttackChartProps {
   data: EncryptionData[];
+  selectedEncryptions?: string[];
+  onEncryptionClick?: (encryption: string) => void;
 }
 
-export default function EncryptionAttackChart({ data }: EncryptionAttackChartProps) {
+export default function EncryptionAttackChart({ data, selectedEncryptions = [], onEncryptionClick }: EncryptionAttackChartProps) {
+  const [hoveredEncryption, setHoveredEncryption] = useState<string | null>(null);
   return (
     <div className="flex flex-col">
       <h3 className="text-base font-semibold text-slate-200 mb-1">
@@ -54,18 +58,23 @@ export default function EncryptionAttackChart({ data }: EncryptionAttackChartPro
               />
               <Tooltip
                 cursor={{ fill: 'rgba(148,163,184,0.08)' }}
-                contentStyle={{
-                  backgroundColor: '#020617',
-                  border: '1px solid #1e293b',
-                  borderRadius: 6,
-                  fontSize: 12,
-                  color: '#e2e8f0'
-                }}
-                formatter={(value: number | undefined, name: string | undefined) => {
-                  if (value === undefined || name === undefined) return ['', name || ''];
-                  if (name === 'attackCount') return [value, 'Attacks'];
-                  if (name === 'cleanCount') return [value, 'Clean Sessions'];
-                  return [value, name];
+                content={({ active, payload, label }) => {
+                  if (!active || !payload || !payload.length) return null;
+                  const data = payload[0].payload;
+                  return (
+                    <div className="bg-slate-950 border border-slate-700 rounded px-2 py-1.5 text-xs">
+                      <div className="font-semibold text-slate-100 mb-1">{label}</div>
+                      {payload.map((entry: any, index: number) => {
+                        const name = entry.dataKey === 'attackCount' ? 'Attacks' : 'Clean Sessions';
+                        const value = entry.value.toLocaleString();
+                        return (
+                          <div key={index} className="text-slate-300 leading-tight">
+                            {name}: {value}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  );
                 }}
               />
               <Legend
@@ -76,8 +85,76 @@ export default function EncryptionAttackChart({ data }: EncryptionAttackChartPro
                   return value;
                 }}
               />
-              <Bar dataKey="attackCount" stackId="a" fill="#ef4444" name="attackCount" />
-              <Bar dataKey="cleanCount" stackId="a" fill="#22c55e" name="cleanCount" />
+              <Bar 
+                dataKey="attackCount" 
+                stackId="a" 
+                name="attackCount"
+                onClick={(data: any) => {
+                  if (data?.encryption) {
+                    onEncryptionClick?.(data.encryption);
+                  }
+                }}
+              >
+                {data.map((entry, index) => (
+                  <Cell 
+                    key={`cell-attack-${index}`}
+                    fill={
+                      selectedEncryptions.includes(entry.encryption)
+                        ? '#ef4444'
+                        : hoveredEncryption === entry.encryption
+                        ? '#f87171'
+                        : '#ef4444'
+                    }
+                    opacity={
+                      selectedEncryptions.length > 0 && !selectedEncryptions.includes(entry.encryption)
+                        ? 0.3
+                        : hoveredEncryption === entry.encryption
+                        ? 1
+                        : selectedEncryptions.includes(entry.encryption)
+                        ? 1
+                        : 0.7
+                    }
+                    style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+                    onMouseEnter={() => setHoveredEncryption(entry.encryption)}
+                    onMouseLeave={() => setHoveredEncryption(null)}
+                  />
+                ))}
+              </Bar>
+              <Bar 
+                dataKey="cleanCount" 
+                stackId="a" 
+                name="cleanCount"
+                onClick={(data: any) => {
+                  if (data?.encryption) {
+                    onEncryptionClick?.(data.encryption);
+                  }
+                }}
+              >
+                {data.map((entry, index) => (
+                  <Cell 
+                    key={`cell-clean-${index}`}
+                    fill={
+                      selectedEncryptions.includes(entry.encryption)
+                        ? '#22c55e'
+                        : hoveredEncryption === entry.encryption
+                        ? '#4ade80'
+                        : '#22c55e'
+                    }
+                    opacity={
+                      selectedEncryptions.length > 0 && !selectedEncryptions.includes(entry.encryption)
+                        ? 0.3
+                        : hoveredEncryption === entry.encryption
+                        ? 1
+                        : selectedEncryptions.includes(entry.encryption)
+                        ? 1
+                        : 0.7
+                    }
+                    style={{ cursor: 'pointer', transition: 'opacity 0.2s' }}
+                    onMouseEnter={() => setHoveredEncryption(entry.encryption)}
+                    onMouseLeave={() => setHoveredEncryption(null)}
+                  />
+                ))}
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -85,17 +162,41 @@ export default function EncryptionAttackChart({ data }: EncryptionAttackChartPro
         {/* Attack Rate Summary */}
         <div className="pt-2 border-t border-slate-800/80 overflow-y-auto max-h-24">
           <div className="grid grid-cols-3 gap-2">
-            {data.map(item => (
-              <div key={item.encryption} className="flex flex-col">
-                <span className="text-[11px] font-medium text-slate-300">
-                  {item.encryption}
-                </span>
-                <span className="text-xs font-semibold text-orange-400">
-                  {item.attackRate.toFixed(1)}% attack rate
-                </span>
-              </div>
-            ))}
+            {data.map(item => {
+              const isSelected = selectedEncryptions.includes(item.encryption);
+              return (
+                <div 
+                  key={item.encryption} 
+                  onClick={() => onEncryptionClick?.(item.encryption)}
+                  className={`flex flex-col p-1 rounded border transition-all cursor-pointer ${
+                    isSelected
+                      ? 'bg-red-950/40 border-red-500/60'
+                      : 'hover:bg-slate-800/50 border-transparent'
+                  }`}
+                >
+                  <span className={`text-[11px] font-medium ${isSelected ? 'text-red-200' : 'text-slate-300'}`}>
+                    {item.encryption}
+                  </span>
+                  <span className={`text-xs font-semibold ${isSelected ? 'text-red-300' : 'text-orange-400'}`}>
+                    {item.attackRate.toFixed(1)}% attack rate
+                  </span>
+                  {isSelected && (
+                    <span className="text-[10px] text-red-400 mt-0.5">✓ Selected</span>
+                  )}
+                </div>
+              );
+            })}
           </div>
+          {selectedEncryptions.length > 0 && (
+            <div className="mt-2 text-center">
+              <button
+                onClick={() => selectedEncryptions.forEach(e => onEncryptionClick?.(e))}
+                className="text-xs text-slate-400 hover:text-slate-300 underline"
+              >
+                Clear encryption filter
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
