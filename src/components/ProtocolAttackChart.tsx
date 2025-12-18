@@ -15,10 +15,11 @@ interface ProtocolAttackChartProps {
 
 export default function ProtocolAttackChart({ data }: ProtocolAttackChartProps) {
   return (
-    <>
+    <div className="flex flex-col">
       <h3 className="text-base font-semibold text-slate-200 mb-1">Attack Rate by Protocol</h3>
       <p className="text-xs text-slate-400 mb-2">Comparing malicious activity across network protocols</p>
-      <div className="flex-grow min-h-0">
+      {/* Compact height - bento box style, independent of row height */}
+      <div className="h-16 md:h-20 lg:h-24">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data} margin={{ top: 5, right: 20, left: -10, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="rgba(255, 255, 255, 0.1)" />
@@ -53,7 +54,8 @@ export default function ProtocolAttackChart({ data }: ProtocolAttackChartProps) 
                 fontSize: '12px',
                 borderRadius: '4px'
               }}
-              formatter={(value: number, name: string) => {
+              formatter={(value: number | undefined, name: string | undefined) => {
+                if (value === undefined || name === undefined) return ['', name || ''];
                 if (name === 'Attack Rate') return [`${value.toFixed(1)}%`, 'Attack Rate'];
                 if (name === 'Total Sessions') return [value.toLocaleString(), 'Total Sessions'];
                 return [value, name];
@@ -72,6 +74,6 @@ export default function ProtocolAttackChart({ data }: ProtocolAttackChartProps) 
           </BarChart>
         </ResponsiveContainer>
       </div>
-    </>
+    </div>
   );
 }

@@ -17,7 +17,7 @@ interface ReputationChartProps {
 
 export default function ReputationChart({ data }: ReputationChartProps) {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       <h3 className="text-base font-semibold text-slate-200 mb-1">
         Attack Rate vs IP Reputation Score
       </h3>
@@ -26,8 +26,8 @@ export default function ReputationChart({ data }: ReputationChartProps) {
       </p>
 
       <div className="flex flex-col gap-2">
-        {/* Fixed but responsive chart height for lower row */}
-        <div className="h-36 md:h-40 lg:h-44">
+        {/* Scaled down for better viewport fit */}
+        <div className="h-24 md:h-28 lg:h-32">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={data}
@@ -83,7 +83,8 @@ export default function ReputationChart({ data }: ReputationChartProps) {
                   fontSize: 12,
                   color: '#e2e8f0'
                 }}
-                formatter={(value: number, name: string) => {
+                formatter={(value: number | undefined, name: string | undefined) => {
+                  if (value === undefined || name === undefined) return ['', name || ''];
                   if (name === 'attackRate') return [`${value.toFixed(1)}%`, 'Attack Rate'];
                   if (name === 'sessionCount') return [value, 'Sessions'];
                   return [value, name];

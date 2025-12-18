@@ -31,7 +31,7 @@ export default function BehaviorHeatmap({ data }: BehaviorHeatmapProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       <h3 className="text-base font-semibold text-slate-200 mb-1">
         Authentication Behavior
       </h3>
@@ -39,8 +39,8 @@ export default function BehaviorHeatmap({ data }: BehaviorHeatmapProps) {
         Attack rate by login attempts vs failed logins.
       </p>
 
-      {/* Main heatmap area */}
-      <div className="flex-grow min-h-0 flex flex-col gap-2">
+      {/* Main heatmap area - constrained height */}
+      <div className="flex flex-col gap-2 max-h-[140px] md:max-h-[160px] lg:max-h-[180px]">
         {/* Header row */}
         <div className="grid grid-cols-[minmax(0,1.5fr)_repeat(4,minmax(0,1fr))] gap-1">
           <div className="text-[10px] font-medium text-slate-400 flex items-end justify-start pb-1 leading-tight">

@@ -7,7 +7,6 @@ import BehaviorHeatmap from '@/components/BehaviorHeatmap';
 import ProtocolAttackChart from '@/components/ProtocolAttackChart';
 import EncryptionAttackChart from '@/components/EncryptionAttackChart';
 import BrowserAttackChart from '@/components/BrowserAttackChart';
-import OffHoursChart from '@/components/OffHoursChart';
 import ReputationChart from '@/components/ReputationChart';
 import SuspiciousSessionsTable from '@/components/SuspiciousSessionsTable';
 import {
@@ -18,8 +17,7 @@ import {
   groupByBrowser,
   bucketByReputation,
   buildBehaviorBuckets,
-  getSuspiciousSessions,
-  getOffHoursStats
+  getSuspiciousSessions
 } from '@/lib/dataLoader';
 import type { IntrusionData } from '@/lib/dataLoader';
 
@@ -112,7 +110,6 @@ export default function Home() {
   const reputationBuckets = useMemo(() => bucketByReputation(filteredData), [filteredData]);
   const behaviorBuckets = useMemo(() => buildBehaviorBuckets(filteredData), [filteredData]);
   const suspiciousSessions = useMemo(() => getSuspiciousSessions(filteredData, 50), [filteredData]);
-  const offHoursStats = useMemo(() => getOffHoursStats(filteredData), [filteredData]);
 
   if (loading) {
     return (
@@ -135,10 +132,10 @@ export default function Home() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
-      {/* Main Content - 3-row banded layout: compact header, analytic grid, footer (~20% height) */}
-      <main className="flex-1 grid grid-rows-[12vh,1fr,20vh] min-h-0 border-l border-slate-900">
-        {/* Band A: Header / KPIs (clamped height) */}
-        <header className="flex items-start justify-between gap-3 px-3 py-2 border-b border-slate-800 bg-slate-950/80 overflow-hidden">
+      {/* Main Content - 3-row banded layout: header with visible KPIs, analytic grid, footer (~20% height) */}
+      <main className="flex-1 grid grid-rows-[auto,1fr,20vh] min-h-0 border-l border-slate-900">
+        {/* Band A: Header / KPIs - auto height to ensure visibility */}
+        <header className="flex items-center justify-between gap-3 px-3 py-2 border-b border-slate-800 bg-slate-950/80 min-h-[80px]">
           <div className="flex-1 min-w-0">
             <KPICards
               totalSessions={kpis.totalSessions}
@@ -157,28 +154,24 @@ export default function Home() {
           </div>
         </header>
 
-        {/* Band A/B: Main analytic grid (hierarchical like sketch) */}
-        <section className="px-3 py-3 min-h-0">
-          <div className="grid grid-cols-4 auto-rows-[minmax(0,1fr)] gap-3 h-full">
-            {/* Row 1 (charts row 1) */}
-            <div className="col-span-1 rounded-lg border border-slate-800 bg-slate-950/70 p-2 flex flex-col min-w-0">
+        {/* Band A/B: Main analytic grid - true bento box layout, each card has independent height */}
+        <section className="px-3 py-1.5 min-h-0">
+          <div className="grid grid-cols-4 gap-3" style={{ gridAutoRows: 'min-content', alignContent: 'start' }}>
+            {/* Each card has its own height - no row stretching */}
+            <div className="col-span-2 rounded-lg border border-slate-800 bg-slate-950/70 p-2 min-w-0">
               <BehaviorHeatmap data={behaviorBuckets} />
             </div>
-            <div className="col-span-1 rounded-lg border border-slate-800 bg-slate-950/70 p-2 flex flex-col min-w-0">
-              <OffHoursChart data={offHoursStats} />
-            </div>
-            <div className="col-span-2 rounded-lg border border-slate-800 bg-slate-950/70 p-2 flex flex-col min-w-0">
+            <div className="col-span-2 rounded-lg border border-slate-800 bg-slate-950/70 p-2 min-w-0">
               <ProtocolAttackChart data={protocolStats} />
             </div>
 
-            {/* Row 2 (charts row 2) */}
-            <div className="col-span-2 rounded-lg border border-slate-900 bg-slate-950/60 p-2 flex flex-col min-w-0">
+            <div className="col-span-2 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0">
               <EncryptionAttackChart data={encryptionStats} />
             </div>
-            <div className="col-span-1 rounded-lg border border-slate-900 bg-slate-950/60 p-2 flex flex-col min-w-0">
+            <div className="col-span-1 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0">
               <BrowserAttackChart data={browserStats} />
             </div>
-            <div className="col-span-1 rounded-lg border border-slate-900 bg-slate-950/60 p-2 flex flex-col min-w-0">
+            <div className="col-span-1 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0">
               <ReputationChart data={reputationBuckets} />
             </div>
           </div>

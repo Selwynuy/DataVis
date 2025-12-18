@@ -16,7 +16,7 @@ interface BrowserAttackChartProps {
 
 export default function BrowserAttackChart({ data }: BrowserAttackChartProps) {
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col">
       <h3 className="text-base font-semibold text-slate-200 mb-1">
         Attack Rate by Browser Type
       </h3>
@@ -25,8 +25,8 @@ export default function BrowserAttackChart({ data }: BrowserAttackChartProps) {
       </p>
 
       <div className="flex flex-col gap-2">
-        {/* Fixed but responsive chart height for better visibility in short rows */}
-        <div className="h-36 md:h-40 lg:h-44">
+        {/* Scaled down for better viewport fit */}
+        <div className="h-24 md:h-28 lg:h-32">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}
@@ -61,7 +61,8 @@ export default function BrowserAttackChart({ data }: BrowserAttackChartProps) {
                   fontSize: 12,
                   color: '#e2e8f0'
                 }}
-                formatter={(value: number, name: string) => {
+                formatter={(value: number | undefined, name: string | undefined) => {
+                  if (value === undefined || name === undefined) return ['', name || ''];
                   if (name === 'attackRate') return [`${value.toFixed(1)}%`, 'Overall Attack Rate'];
                   if (name === 'offHoursAttackRate') {
                     return [`${value.toFixed(1)}%`, 'Off-Hours Attack Rate'];

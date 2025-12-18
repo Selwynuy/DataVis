@@ -46,8 +46,9 @@ export default function OffHoursChart({ data }: OffHoursChartProps) {
         Comparing attack likelihood by time of access
       </p>
 
-      <div className="flex-grow min-h-0 flex flex-col gap-2">
-        <div className="flex-grow min-h-0">
+      <div className="flex flex-col gap-2">
+        {/* Slightly smaller fixed chart height so top row visuals don't dominate */}
+        <div className="h-40 md:h-44 lg:h-48">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={chartData}
