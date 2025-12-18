@@ -135,10 +135,10 @@ export default function Home() {
         onToggleCollapse={() => setSidebarCollapsed(!sidebarCollapsed)}
       />
 
-      {/* Main Content - 100vh, banded layout */}
-      <main className="flex-1 grid grid-rows-[auto,1fr,24vh] min-h-0 border-l border-slate-900">
-        {/* Band A: Header / KPIs */}
-        <header className="flex items-start justify-between gap-4 px-4 py-3 border-b border-slate-800 bg-slate-950/80">
+      {/* Main Content - 3-row banded layout: compact header, analytic grid, footer (~20% height) */}
+      <main className="flex-1 grid grid-rows-[12vh,1fr,20vh] min-h-0 border-l border-slate-900">
+        {/* Band A: Header / KPIs (clamped height) */}
+        <header className="flex items-start justify-between gap-3 px-3 py-2 border-b border-slate-800 bg-slate-950/80 overflow-hidden">
           <div className="flex-1 min-w-0">
             <KPICards
               totalSessions={kpis.totalSessions}
@@ -184,8 +184,8 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Band C: triage & status */}
-        <footer className="border-t border-slate-800 bg-slate-950/90 px-3 py-2 grid grid-rows-[1fr,auto] min-h-0">
+        {/* Band C: triage & status (clamped to ~20% viewport height) */}
+        <footer className="border-t border-slate-800 bg-slate-950/90 px-3 py-2 grid grid-rows-[1fr,auto] min-h-0 h-[20vh] overflow-hidden">
           <div className="overflow-y-auto pr-1">
             <SuspiciousSessionsTable data={suspiciousSessions} />
           </div>

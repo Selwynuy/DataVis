@@ -1,6 +1,5 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Area, ComposedChart } from 'recharts';
 
 interface ReputationBucket {
@@ -18,114 +17,141 @@ interface ReputationChartProps {
 
 export default function ReputationChart({ data }: ReputationChartProps) {
   return (
-    <Card className="border-slate-200">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold text-slate-900">
-          Attack Rate vs IP Reputation Score
-        </CardTitle>
-        <p className="text-sm text-slate-600">Lower reputation scores correlate with higher attack rates</p>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <ComposedChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis
-              dataKey="bucket"
-              stroke="#64748b"
-              style={{ fontSize: '12px' }}
-              label={{ value: 'IP Reputation Score', position: 'insideBottom', offset: -5, style: { fontSize: '12px' } }}
-            />
-            <YAxis
-              yAxisId="left"
-              stroke="#64748b"
-              style={{ fontSize: '12px' }}
-              label={{ value: 'Attack Rate (%)', angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }}
-            />
-            <YAxis
-              yAxisId="right"
-              orientation="right"
-              stroke="#94a3b8"
-              style={{ fontSize: '12px' }}
-              label={{ value: 'Sessions', angle: 90, position: 'insideRight', style: { fontSize: '12px' } }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '12px'
-              }}
-              formatter={(value: number, name: string) => {
-                if (name === 'attackRate') return [`${value.toFixed(1)}%`, 'Attack Rate'];
-                if (name === 'sessionCount') return [value, 'Sessions'];
-                return [value, name];
-              }}
-            />
-            <Legend
-              wrapperStyle={{ fontSize: '12px' }}
-              formatter={(value) => {
-                if (value === 'attackRate') return 'Attack Rate (%)';
-                if (value === 'sessionCount') return 'Total Sessions';
-                return value;
-              }}
-            />
-            <Area
-              yAxisId="right"
-              type="monotone"
-              dataKey="sessionCount"
-              fill="#e0e7ff"
-              stroke="#818cf8"
-              fillOpacity={0.3}
-              name="sessionCount"
-            />
-            <Line
-              yAxisId="left"
-              type="monotone"
-              dataKey="attackRate"
-              stroke="#ef4444"
-              strokeWidth={3}
-              dot={{ fill: '#ef4444', r: 4 }}
-              name="attackRate"
-            />
-          </ComposedChart>
-        </ResponsiveContainer>
+    <div className="flex flex-col h-full">
+      <h3 className="text-base font-semibold text-slate-200 mb-1">
+        Attack Rate vs IP Reputation Score
+      </h3>
+      <p className="text-xs text-slate-400 mb-2">
+        Lower reputation scores correlate with higher attack rates
+      </p>
+
+      <div className="flex-grow min-h-0 flex flex-col gap-2">
+        <div className="flex-grow min-h-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <ComposedChart
+              data={data}
+              margin={{ top: 5, right: 10, left: -10, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.25)" />
+              <XAxis
+                dataKey="bucket"
+                stroke="#94a3b8"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                label={{
+                  value: 'IP Reputation Score',
+                  position: 'insideBottom',
+                  offset: -5,
+                  style: { fontSize: 11, fill: '#94a3b8' }
+                }}
+              />
+              <YAxis
+                yAxisId="left"
+                stroke="#94a3b8"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                label={{
+                  value: 'Attack Rate (%)',
+                  angle: -90,
+                  position: 'insideLeft',
+                  style: { fontSize: 11, fill: '#94a3b8' }
+                }}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                stroke="#94a3b8"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                label={{
+                  value: 'Sessions',
+                  angle: 90,
+                  position: 'insideRight',
+                  style: { fontSize: 11, fill: '#94a3b8' }
+                }}
+              />
+              <Tooltip
+                cursor={{ fill: 'rgba(148,163,184,0.08)' }}
+                contentStyle={{
+                  backgroundColor: '#020617',
+                  border: '1px solid #1e293b',
+                  borderRadius: 6,
+                  fontSize: 12,
+                  color: '#e2e8f0'
+                }}
+                formatter={(value: number, name: string) => {
+                  if (name === 'attackRate') return [`${value.toFixed(1)}%`, 'Attack Rate'];
+                  if (name === 'sessionCount') return [value, 'Sessions'];
+                  return [value, name];
+                }}
+              />
+              <Legend
+                wrapperStyle={{ fontSize: 12 }}
+                formatter={(value: string) => {
+                  if (value === 'attackRate') return 'Attack Rate (%)';
+                  if (value === 'sessionCount') return 'Total Sessions';
+                  return value;
+                }}
+              />
+              <Area
+                yAxisId="right"
+                type="monotone"
+                dataKey="sessionCount"
+                fill="#1d4ed8"
+                stroke="#60a5fa"
+                fillOpacity={0.25}
+                name="sessionCount"
+              />
+              <Line
+                yAxisId="left"
+                type="monotone"
+                dataKey="attackRate"
+                stroke="#ef4444"
+                strokeWidth={3}
+                dot={{ fill: '#ef4444', r: 3 }}
+                name="attackRate"
+              />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
 
         {/* Risk Bands */}
-        <div className="mt-4 pt-4 border-t border-slate-200">
-          <div className="grid grid-cols-3 gap-3">
-            <div className="flex flex-col p-2 bg-red-50 border border-red-200 rounded">
-              <span className="text-xs font-medium text-red-700">High Risk (0.0-0.3)</span>
-              <span className="text-sm font-bold text-red-600">
-                {data
-                  .filter(d => d.min < 0.3)
-                  .reduce((sum, d) => sum + d.attackCount, 0)
-                  .toLocaleString()}{' '}
-                attacks
-              </span>
-            </div>
-            <div className="flex flex-col p-2 bg-yellow-50 border border-yellow-200 rounded">
-              <span className="text-xs font-medium text-yellow-700">Medium Risk (0.3-0.7)</span>
-              <span className="text-sm font-bold text-yellow-600">
-                {data
-                  .filter(d => d.min >= 0.3 && d.min < 0.7)
-                  .reduce((sum, d) => sum + d.attackCount, 0)
-                  .toLocaleString()}{' '}
-                attacks
-              </span>
-            </div>
-            <div className="flex flex-col p-2 bg-green-50 border border-green-200 rounded">
-              <span className="text-xs font-medium text-green-700">Low Risk (0.7-1.0)</span>
-              <span className="text-sm font-bold text-green-600">
-                {data
-                  .filter(d => d.min >= 0.7)
-                  .reduce((sum, d) => sum + d.attackCount, 0)
-                  .toLocaleString()}{' '}
-                attacks
-              </span>
-            </div>
+        <div className="pt-2 border-t border-slate-800/80 text-[11px] grid grid-cols-3 gap-2">
+          <div className="flex flex-col p-2 bg-red-950/40 border border-red-500/40 rounded">
+            <span className="font-medium text-red-200">High Risk (0.0-0.3)</span>
+            <span className="text-xs font-bold text-red-300">
+              {data
+                .filter(d => d.min < 0.3)
+                .reduce((sum, d) => sum + d.attackCount, 0)
+                .toLocaleString()}{' '}
+              attacks
+            </span>
+          </div>
+          <div className="flex flex-col p-2 bg-yellow-950/40 border border-yellow-500/40 rounded">
+            <span className="font-medium text-yellow-200">Medium Risk (0.3-0.7)</span>
+            <span className="text-xs font-bold text-yellow-200">
+              {data
+                .filter(d => d.min >= 0.3 && d.min < 0.7)
+                .reduce((sum, d) => sum + d.attackCount, 0)
+                .toLocaleString()}{' '}
+              attacks
+            </span>
+          </div>
+          <div className="flex flex-col p-2 bg-emerald-950/40 border border-emerald-500/40 rounded">
+            <span className="font-medium text-emerald-200">Low Risk (0.7-1.0)</span>
+            <span className="text-xs font-bold text-emerald-200">
+              {data
+                .filter(d => d.min >= 0.7)
+                .reduce((sum, d) => sum + d.attackCount, 0)
+                .toLocaleString()}{' '}
+              attacks
+            </span>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,6 @@
 'use client';
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, Cell } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
 
 interface OffHoursData {
   offHours: {
@@ -39,69 +38,100 @@ export default function OffHoursChart({ data }: OffHoursChartProps) {
   const colors = ['#3b82f6', '#9333ea'];
 
   return (
-    <Card className="border-slate-200">
-      <CardHeader>
-        <CardTitle className="text-lg font-semibold text-slate-900">
-          Off-Hours vs Business Hours Attack Rate
-        </CardTitle>
-        <p className="text-sm text-slate-600">Comparing attack likelihood by time of access</p>
-      </CardHeader>
-      <CardContent>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={chartData}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-            <XAxis
-              dataKey="name"
-              stroke="#64748b"
-              style={{ fontSize: '12px' }}
-            />
-            <YAxis
-              stroke="#64748b"
-              style={{ fontSize: '12px' }}
-              label={{ value: 'Attack Rate (%)', angle: -90, position: 'insideLeft', style: { fontSize: '12px' } }}
-            />
-            <Tooltip
-              contentStyle={{
-                backgroundColor: 'white',
-                border: '1px solid #e2e8f0',
-                borderRadius: '6px',
-                fontSize: '12px'
-              }}
-              formatter={(value: number, name: string) => {
-                if (name === 'attackRate') return [`${value.toFixed(1)}%`, 'Attack Rate'];
-                if (name === 'sessions') return [value, 'Total Sessions'];
-                if (name === 'attacks') return [value, 'Attacks'];
-                return [value, name];
-              }}
-            />
-            <Bar dataKey="attackRate" name="attackRate">
-              {chartData.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={colors[index]} />
-              ))}
-            </Bar>
-          </BarChart>
-        </ResponsiveContainer>
+    <div className="flex flex-col h-full">
+      <h3 className="text-base font-semibold text-slate-200 mb-1">
+        Off-Hours vs Business Hours Attack Rate
+      </h3>
+      <p className="text-xs text-slate-400 mb-2">
+        Comparing attack likelihood by time of access
+      </p>
+
+      <div className="flex-grow min-h-0 flex flex-col gap-2">
+        <div className="flex-grow min-h-0">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart
+              data={chartData}
+              margin={{ top: 5, right: 10, left: -10, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(148,163,184,0.25)" />
+              <XAxis
+                dataKey="name"
+                stroke="#94a3b8"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+              />
+              <YAxis
+                stroke="#94a3b8"
+                fontSize={12}
+                tickLine={false}
+                axisLine={false}
+                label={{
+                  value: 'Attack Rate (%)',
+                  angle: -90,
+                  position: 'insideLeft',
+                  style: { fontSize: 11, fill: '#94a3b8' }
+                }}
+              />
+              <Tooltip
+                cursor={{ fill: 'rgba(148,163,184,0.08)' }}
+                contentStyle={{
+                  backgroundColor: '#020617',
+                  border: '1px solid #1e293b',
+                  borderRadius: 6,
+                  fontSize: 12,
+                  color: '#e2e8f0'
+                }}
+                formatter={(value: number, name: string) => {
+                  if (name === 'attackRate') return [`${value.toFixed(1)}%`, 'Attack Rate'];
+                  if (name === 'sessions') return [value, 'Total Sessions'];
+                  if (name === 'attacks') return [value, 'Attacks'];
+                  return [value, name];
+                }}
+              />
+              <Bar dataKey="attackRate" name="attackRate">
+                {chartData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={colors[index]} />
+                ))}
+              </Bar>
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
 
         {/* Summary Stats */}
-        <div className="mt-4 pt-4 border-t border-slate-200 grid grid-cols-2 gap-4">
+        <div className="pt-2 border-t border-slate-800/80 grid grid-cols-2 gap-3 text-[11px]">
           <div className="flex flex-col">
-            <span className="text-xs font-medium text-slate-600">Business Hours</span>
-            <span className="text-lg font-bold text-blue-600">{data.businessHours.attackRate.toFixed(1)}%</span>
-            <span className="text-xs text-slate-500">{data.businessHours.attacks} attacks / {data.businessHours.sessions} sessions</span>
+            <span className="font-medium text-slate-300">Business Hours</span>
+            <span className="text-sm font-bold text-sky-400">
+              {data.businessHours.attackRate.toFixed(1)}%
+            </span>
+            <span className="text-slate-400">
+              {data.businessHours.attacks.toLocaleString()} attacks /{' '}
+              {data.businessHours.sessions.toLocaleString()} sessions
+            </span>
           </div>
           <div className="flex flex-col">
-            <span className="text-xs font-medium text-slate-600">Off-Hours</span>
-            <span className="text-lg font-bold text-purple-600">{data.offHours.attackRate.toFixed(1)}%</span>
-            <span className="text-xs text-slate-500">{data.offHours.attacks} attacks / {data.offHours.sessions} sessions</span>
+            <span className="font-medium text-slate-300">Off-Hours</span>
+            <span className="text-sm font-bold text-purple-400">
+              {data.offHours.attackRate.toFixed(1)}%
+            </span>
+            <span className="text-slate-400">
+              {data.offHours.attacks.toLocaleString()} attacks /{' '}
+              {data.offHours.sessions.toLocaleString()} sessions
+            </span>
           </div>
         </div>
 
         {data.offHours.attackRate > data.businessHours.attackRate && (
-          <div className="mt-3 p-2 bg-purple-50 border border-purple-200 rounded text-xs text-purple-700">
-            <strong>⚠ Off-hours sessions are {(data.offHours.attackRate / data.businessHours.attackRate).toFixed(1)}x more likely to be malicious</strong>
+          <div className="mt-1 p-2 bg-purple-950/40 border border-purple-500/40 rounded text-[11px] text-purple-200">
+            <strong>
+              Off-hours sessions are{' '}
+              {(data.offHours.attackRate / data.businessHours.attackRate).toFixed(1)}x
+              {' '}more likely to be malicious
+            </strong>
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }

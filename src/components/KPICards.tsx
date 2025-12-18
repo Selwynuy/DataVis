@@ -62,18 +62,22 @@ export default function KPICards({
   ];
 
   return (
-    <div className="grid grid-cols-5 gap-3">
+    <div className="grid grid-cols-5 gap-2">
       {kpis.map((kpi, index) => {
         const Icon = kpi.icon;
         return (
-          <Card key={index} className="border-slate-800 bg-slate-900/50">
-            <CardContent className="p-2 flex items-center gap-3">
-              <div className={`${kpi.iconBg} p-2 rounded-md`}>
-                <Icon className={`w-5 h-5 ${kpi.iconColor}`} />
+          <Card key={index} className="border-slate-800 bg-slate-900/60">
+            <CardContent className="px-2 py-1.5 flex items-center gap-2">
+              <div className={`${kpi.iconBg} p-1.5 rounded`}>
+                <Icon className={`w-4 h-4 ${kpi.iconColor}`} />
               </div>
               <div>
-                <p className="text-lg font-bold text-slate-50">{kpi.value}</p>
-                <p className="text-xs font-medium text-slate-400">{kpi.title}</p>
+                <p className="text-sm font-semibold text-slate-50 leading-tight">
+                  {kpi.value}
+                </p>
+                <p className="text-[11px] font-medium text-slate-400 leading-tight">
+                  {kpi.title}
+                </p>
               </div>
             </CardContent>
           </Card>
