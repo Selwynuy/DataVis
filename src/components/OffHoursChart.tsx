@@ -83,11 +83,12 @@ export default function OffHoursChart({ data }: OffHoursChartProps) {
                   fontSize: 12,
                   color: '#e2e8f0'
                 }}
-                formatter={(value: number, name: string) => {
+                formatter={(value: number | undefined, name: string | undefined) => {
+                  if (value === undefined) return ['N/A', name || ''];
                   if (name === 'attackRate') return [`${value.toFixed(1)}%`, 'Attack Rate'];
                   if (name === 'sessions') return [value, 'Total Sessions'];
                   if (name === 'attacks') return [value, 'Attacks'];
-                  return [value, name];
+                  return [value, name || ''];
                 }}
               />
               <Bar dataKey="attackRate" name="attackRate">
