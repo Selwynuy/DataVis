@@ -24,8 +24,9 @@ export default function BrowserAttackChart({ data }: BrowserAttackChartProps) {
         Comparing attack rates across browsers and off-hours activity
       </p>
 
-      <div className="flex-grow min-h-0 flex flex-col gap-2">
-        <div className="flex-grow min-h-0">
+      <div className="flex flex-col gap-2">
+        {/* Fixed but responsive chart height for better visibility in short rows */}
+        <div className="h-36 md:h-40 lg:h-44">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart
               data={data}

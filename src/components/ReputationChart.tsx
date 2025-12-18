@@ -25,8 +25,9 @@ export default function ReputationChart({ data }: ReputationChartProps) {
         Lower reputation scores correlate with higher attack rates
       </p>
 
-      <div className="flex-grow min-h-0 flex flex-col gap-2">
-        <div className="flex-grow min-h-0">
+      <div className="flex flex-col gap-2">
+        {/* Fixed but responsive chart height for lower row */}
+        <div className="h-36 md:h-40 lg:h-44">
           <ResponsiveContainer width="100%" height="100%">
             <ComposedChart
               data={data}

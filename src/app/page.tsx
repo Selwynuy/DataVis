@@ -185,11 +185,11 @@ export default function Home() {
         </section>
 
         {/* Band C: triage & status (clamped to ~20% viewport height) */}
-        <footer className="border-t border-slate-800 bg-slate-950/90 px-3 py-2 grid grid-rows-[1fr,auto] min-h-0 h-[20vh] overflow-hidden">
+        <footer className="border-t border-slate-800 bg-slate-950/90 px-3 py-1.5 grid grid-rows-[1fr,auto] min-h-0 h-[20vh] overflow-hidden">
           <div className="overflow-y-auto pr-1">
             <SuspiciousSessionsTable data={suspiciousSessions} />
           </div>
-          <div className="flex items-center justify-between gap-2 pt-2 text-[11px] text-slate-500">
+          <div className="flex items-center justify-between gap-2 pt-1.5 text-[11px] text-slate-500">
             <span>
               Showing {suspiciousSessions.length.toLocaleString()} suspicious sessions after filters.
             </span>

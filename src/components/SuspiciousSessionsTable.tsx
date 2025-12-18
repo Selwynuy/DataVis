@@ -71,35 +71,35 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
 
   return (
     <>
-      <Card className="border-slate-200">
-        <CardHeader className="pb-3">
+      <Card className="border-slate-800 bg-slate-950/60">
+        <CardHeader className="pb-2 pt-1">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-base font-semibold flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-red-600" />
+              <CardTitle className="text-sm font-semibold flex items-center gap-2 text-slate-100">
+                <AlertCircle className="w-4 h-4 text-red-400" />
                 Suspicious Sessions
               </CardTitle>
-              <p className="text-xs text-slate-600 mt-0.5">Click row for details</p>
+              <p className="text-[11px] text-slate-400 mt-0.5">Click row for details</p>
             </div>
-            <Badge variant="outline" className="px-2 py-1 text-xs">
+            <Badge variant="outline" className="px-2 py-1 text-[11px] border-slate-700 text-slate-200">
               {data.length} total
             </Badge>
           </div>
         </CardHeader>
         <CardContent className="pt-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-xs">
+            <table className="w-full text-[11px] text-slate-100">
               <thead>
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-2 px-2 font-medium text-slate-700">Session ID</th>
-                  <th className="text-left py-2 px-2 font-medium text-slate-700">Status</th>
-                  <th className="text-left py-2 px-2 font-medium text-slate-700">Risk</th>
-                  <th className="text-left py-2 px-2 font-medium text-slate-700">Protocol</th>
-                  <th className="text-left py-2 px-2 font-medium text-slate-700">Browser</th>
-                  <th className="text-center py-2 px-2 font-medium text-slate-700">Login / Failed</th>
-                  <th className="text-left py-2 px-2 font-medium text-slate-700">Encryption</th>
-                  <th className="text-left py-2 px-2 font-medium text-slate-700">IP Rep</th>
-                  <th className="text-center py-2 px-2 font-medium text-slate-700">Time</th>
+                <tr className="border-b border-slate-800/80">
+                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Session ID</th>
+                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Status</th>
+                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Risk</th>
+                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Protocol</th>
+                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Browser</th>
+                  <th className="text-center py-1.5 px-2 font-medium text-slate-300">Login / Failed</th>
+                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">Encryption</th>
+                  <th className="text-left py-1.5 px-2 font-medium text-slate-300">IP Rep</th>
+                  <th className="text-center py-1.5 px-2 font-medium text-slate-300">Time</th>
                 </tr>
               </thead>
               <tbody>
@@ -109,47 +109,58 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
                     <tr
                       key={index}
                       onClick={() => setSelectedSession(session)}
-                      className="border-b border-slate-100 hover:bg-slate-50 cursor-pointer transition-colors"
+                      className="border-b border-slate-800/60 hover:bg-slate-900/80 cursor-pointer transition-colors"
                     >
-                      <td className="py-2 px-2">
-                        <span className="font-mono text-xs text-slate-900">
+                      <td className="py-1.5 px-2">
+                        <span className="font-mono text-[11px] text-slate-100">
                           {session.sessionId.substring(0, 10)}...
                         </span>
                       </td>
-                      <td className="py-2 px-2">
+                      <td className="py-1.5 px-2">
                         {session.attackDetected ? (
-                          <Badge className="bg-red-100 text-red-700 border-0 text-xs px-1.5 py-0">Attack</Badge>
+                          <Badge className="bg-red-900/60 text-red-300 border-0 text-[11px] px-1.5 py-0">
+                            Attack
+                          </Badge>
                         ) : (
-                          <Badge className="bg-green-100 text-green-700 border-0 text-xs px-1.5 py-0">Clean</Badge>
+                          <Badge className="bg-emerald-900/60 text-emerald-300 border-0 text-[11px] px-1.5 py-0">
+                            Clean
+                          </Badge>
                         )}
                       </td>
-                      <td className="py-2 px-2">
-                        <span className={`font-bold text-xs ${getRiskColor(session.riskScore)}`}>
+                      <td className="py-1.5 px-2">
+                        <span className={`font-bold text-[11px] ${getRiskColor(session.riskScore)}`}>
                           {session.riskScore.toFixed(0)}
                         </span>
                       </td>
-                      <td className="py-2 px-2 text-slate-700">{session.protocolType}</td>
-                      <td className="py-2 px-2 text-slate-700">{session.browserType}</td>
-                      <td className="py-2 px-2 text-center">
-                        <span className="text-slate-700">
+                      <td className="py-1.5 px-2 text-slate-300">{session.protocolType}</td>
+                      <td className="py-1.5 px-2 text-slate-300">{session.browserType}</td>
+                      <td className="py-1.5 px-2 text-center">
+                        <span className="text-slate-300">
                           {session.loginAttempts} / <span className="text-red-600 font-semibold">{session.failedLogins}</span>
                         </span>
                       </td>
-                      <td className="py-2 px-2">
-                        <span className={`${session.encryptionUsed === 'AES' ? 'text-green-700' : 'text-orange-700'}`}>
+                      <td className="py-1.5 px-2">
+                        <span
+                          className={`${
+                            session.encryptionUsed === 'AES' ? 'text-emerald-300' : 'text-orange-300'
+                          }`}
+                        >
                           {session.encryptionUsed}
                         </span>
                       </td>
-                      <td className="py-2 px-2">
-                        <Badge variant="outline" className={`text-xs px-1.5 py-0 ${repBadge.color}`}>
+                      <td className="py-1.5 px-2">
+                        <Badge
+                          variant="outline"
+                          className={`text-[11px] px-1.5 py-0 border-slate-700 ${repBadge.color}`}
+                        >
                           {session.ipReputationScore.toFixed(2)}
                         </Badge>
                       </td>
-                      <td className="py-2 px-2 text-center">
+                      <td className="py-1.5 px-2 text-center">
                         {session.unusualTimeAccess ? (
-                          <Clock className="w-3.5 h-3.5 text-purple-600 mx-auto" />
+                          <Clock className="w-3.5 h-3.5 text-purple-400 mx-auto" />
                         ) : (
-                          <span className="text-slate-400">-</span>
+                          <span className="text-slate-500">-</span>
                         )}
                       </td>
                     </tr>
@@ -161,8 +172,8 @@ export default function SuspiciousSessionsTable({ data, limit = 20 }: Suspicious
 
           {/* Pagination Controls */}
           {totalPages > 1 && (
-            <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-200">
-              <div className="text-xs text-slate-600">
+            <div className="flex items-center justify-between mt-2 pt-2 border-t border-slate-800/80 text-[11px]">
+              <div className="text-slate-400">
                 Page {currentPage} of {totalPages} ({startIndex + 1}-{Math.min(endIndex, data.length)} of {data.length})
               </div>
               <div className="flex gap-1">
