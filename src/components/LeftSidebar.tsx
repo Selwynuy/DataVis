@@ -259,7 +259,7 @@ export default function LeftSidebar({ filters, onFilterChange, isCollapsed, onTo
         </div>
       </div>
 
-      {/* Reset Button */}
+      {/* Actions */}
       <div className="p-3 border-t border-slate-800">
         <Button
           variant="ghost"

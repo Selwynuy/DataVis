@@ -1,7 +1,8 @@
 'use client';
 
-import { useState, useEffect, useMemo, useCallback, use } from 'react';
+import { useState, useMemo, useCallback, use } from 'react';
 import LeftSidebar, { FilterState } from '@/components/LeftSidebar';
+import CSVUploadModal from '@/components/CSVUploadModal';
 import KPICards from '@/components/KPICards';
 import BehaviorHeatmap from '@/components/BehaviorHeatmap';
 import ProtocolAttackChart from '@/components/ProtocolAttackChart';
@@ -10,7 +11,6 @@ import BrowserAttackChart from '@/components/BrowserAttackChart';
 import ReputationChart from '@/components/ReputationChart';
 import SuspiciousSessionsTable from '@/components/SuspiciousSessionsTable';
 import {
-  loadIntrusionData,
   calculateKPIs,
   groupByProtocol,
   groupByEncryption,
@@ -32,8 +32,10 @@ export default function Home({
   use(params);
   use(searchParams);
   const [intrusionData, setIntrusionData] = useState<IntrusionData[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [uploadModalOpen, setUploadModalOpen] = useState(true);
+  const [dataLoaded, setDataLoaded] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     attackOutcome: 'all',
     timeOfAccess: 'all',
@@ -168,13 +170,12 @@ export default function Home({
     return [];
   }, [filters.loginAttemptsMin, filters.loginAttemptsMax, filters.failedLoginsMin, filters.failedLoginsMax]);
 
-  useEffect(() => {
-    const loadData = async () => {
-      const data = await loadIntrusionData();
-      setIntrusionData(data);
-      setLoading(false);
-    };
-    loadData();
+  // No automatic data loading - user must upload CSV
+
+  const handleDataLoaded = useCallback((data: IntrusionData[]) => {
+    setIntrusionData(data);
+    setDataLoaded(true);
+    setLoading(false);
   }, []);
 
   // Apply filters to data
@@ -241,19 +242,34 @@ export default function Home({
   const behaviorBuckets = useMemo(() => buildBehaviorBuckets(filteredData), [filteredData]);
   const suspiciousSessions = useMemo(() => getSuspiciousSessions(filteredData, 50), [filteredData]);
 
-  if (loading) {
+  if (!dataLoaded || intrusionData.length === 0) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mb-4"></div>
-          <p className="text-slate-300 font-medium">Loading dashboard data...</p>
+      <>
+        <CSVUploadModal
+          open={uploadModalOpen}
+          onOpenChange={setUploadModalOpen}
+          onDataLoaded={handleDataLoaded}
+          required={true}
+        />
+        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+          <div className="text-center">
+            <p className="text-slate-300 font-medium mb-4">No data loaded</p>
+            <p className="text-slate-500 text-sm mb-4">Please upload a CSV file to get started</p>
+          </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
+      {/* CSV Upload Modal */}
+      <CSVUploadModal
+        open={uploadModalOpen}
+        onOpenChange={setUploadModalOpen}
+        onDataLoaded={handleDataLoaded}
+      />
+
       {/* Left Sidebar - global filters */}
       <LeftSidebar
         filters={filters}
