@@ -12,7 +12,6 @@ export interface FilterState {
   loginAttemptsMax: number;
   failedLoginsMin: number;
   failedLoginsMax: number;
-  behaviorCells: Array<{ loginAttemptsLabel: string; failedLoginsLabel: string }>;
   protocols: string[];
   encryptions: string[];
   browsers: string[];
@@ -259,7 +258,7 @@ export default function LeftSidebar({ filters, onFilterChange, isCollapsed, onTo
         </div>
       </div>
 
-      {/* Actions */}
+      {/* Reset Button */}
       <div className="p-3 border-t border-slate-800">
         <Button
           variant="ghost"
@@ -272,7 +271,6 @@ export default function LeftSidebar({ filters, onFilterChange, isCollapsed, onTo
             loginAttemptsMax: 99,
             failedLoginsMin: 0,
             failedLoginsMax: 99,
-            behaviorCells: [],
             protocols: [],
             encryptions: [],
             browsers: [],

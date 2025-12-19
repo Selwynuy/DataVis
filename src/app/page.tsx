@@ -1,8 +1,7 @@
 'use client';
 
-import { useState, useMemo, useCallback, use } from 'react';
+import { useState, useEffect, useMemo, use } from 'react';
 import LeftSidebar, { FilterState } from '@/components/LeftSidebar';
-import CSVUploadModal from '@/components/CSVUploadModal';
 import KPICards from '@/components/KPICards';
 import BehaviorHeatmap from '@/components/BehaviorHeatmap';
 import ProtocolAttackChart from '@/components/ProtocolAttackChart';
@@ -11,6 +10,7 @@ import BrowserAttackChart from '@/components/BrowserAttackChart';
 import ReputationChart from '@/components/ReputationChart';
 import SuspiciousSessionsTable from '@/components/SuspiciousSessionsTable';
 import {
+  loadIntrusionData,
   calculateKPIs,
   groupByProtocol,
   groupByEncryption,
@@ -32,10 +32,8 @@ export default function Home({
   use(params);
   use(searchParams);
   const [intrusionData, setIntrusionData] = useState<IntrusionData[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-  const [uploadModalOpen, setUploadModalOpen] = useState(true);
-  const [dataLoaded, setDataLoaded] = useState(false);
   const [filters, setFilters] = useState<FilterState>({
     attackOutcome: 'all',
     timeOfAccess: 'all',
@@ -43,139 +41,19 @@ export default function Home({
     loginAttemptsMax: 99,
     failedLoginsMin: 0,
     failedLoginsMax: 99,
-    behaviorCells: [],
     protocols: [],
     encryptions: [],
     browsers: [],
     reputationRisk: 'all'
   });
 
-  // Chart-based filter handlers
-  const handleProtocolClick = (protocol: string) => {
-    const currentProtocols = filters.protocols;
-    const newProtocols = currentProtocols.includes(protocol)
-      ? currentProtocols.filter(p => p !== protocol)
-      : [...currentProtocols, protocol];
-    setFilters({ ...filters, protocols: newProtocols });
-  };
-
-  const handleBrowserClick = (browser: string) => {
-    const currentBrowsers = filters.browsers;
-    const newBrowsers = currentBrowsers.includes(browser)
-      ? currentBrowsers.filter(b => b !== browser)
-      : [...currentBrowsers, browser];
-    setFilters({ ...filters, browsers: newBrowsers });
-  };
-
-  const handleEncryptionClick = (encryption: string) => {
-    const currentEncryptions = filters.encryptions;
-    const newEncryptions = currentEncryptions.includes(encryption)
-      ? currentEncryptions.filter(e => e !== encryption)
-      : [...currentEncryptions, encryption];
-    setFilters({ ...filters, encryptions: newEncryptions });
-  };
-
-  const handleRiskLevelClick = (riskLevel: 'high' | 'medium' | 'low' | null) => {
-    setFilters({ ...filters, reputationRisk: riskLevel || 'all' });
-  };
-
-  const handleBehaviorCellClick = useCallback((loginAttemptsLabel: string, failedLoginsLabel: string) => {
-    // Parse the labels to get min/max values
-    let loginMin = 0, loginMax = 99;
-    let failedMin = 0, failedMax = 99;
-
-    if (loginAttemptsLabel === '1') {
-      loginMin = 1;
-      loginMax = 1;
-    } else if (loginAttemptsLabel === '2-3') {
-      loginMin = 2;
-      loginMax = 3;
-    } else if (loginAttemptsLabel === '4-5') {
-      loginMin = 4;
-      loginMax = 5;
-    } else if (loginAttemptsLabel === '6+') {
-      loginMin = 6;
-      loginMax = 99;
-    }
-
-    if (failedLoginsLabel === '0') {
-      failedMin = 0;
-      failedMax = 0;
-    } else if (failedLoginsLabel === '1-2') {
-      failedMin = 1;
-      failedMax = 2;
-    } else if (failedLoginsLabel === '3-4') {
-      failedMin = 3;
-      failedMax = 4;
-    } else if (failedLoginsLabel === '5+') {
-      failedMin = 5;
-      failedMax = 99;
-    }
-
-    // Toggle: if already filtered to this range, clear it; otherwise set it
-    const isAlreadyFiltered = 
-      filters.loginAttemptsMin === loginMin &&
-      filters.loginAttemptsMax === loginMax &&
-      filters.failedLoginsMin === failedMin &&
-      filters.failedLoginsMax === failedMax;
-
-    if (isAlreadyFiltered) {
-      setFilters({
-        ...filters,
-        loginAttemptsMin: 0,
-        loginAttemptsMax: 99,
-        failedLoginsMin: 0,
-        failedLoginsMax: 99,
-        behaviorCells: []
-      });
-    } else {
-      setFilters({
-        ...filters,
-        loginAttemptsMin: loginMin,
-        loginAttemptsMax: loginMax,
-        failedLoginsMin: failedMin,
-        failedLoginsMax: failedMax,
-        behaviorCells: [{ loginAttemptsLabel, failedLoginsLabel }]
-      });
-    }
-  }, [filters]);
-
-  // Determine selected cells for behavior heatmap
-  const selectedBehaviorCells = useMemo(() => {
-    if (
-      filters.loginAttemptsMin === 0 &&
-      filters.loginAttemptsMax === 99 &&
-      filters.failedLoginsMin === 0 &&
-      filters.failedLoginsMax === 99
-    ) {
-      return [];
-    }
-
-    // Map filter ranges back to labels
-    const loginLabel = 
-      filters.loginAttemptsMin === 1 && filters.loginAttemptsMax === 1 ? '1' :
-      filters.loginAttemptsMin === 2 && filters.loginAttemptsMax === 3 ? '2-3' :
-      filters.loginAttemptsMin === 4 && filters.loginAttemptsMax === 5 ? '4-5' :
-      filters.loginAttemptsMin >= 6 ? '6+' : null;
-
-    const failedLabel =
-      filters.failedLoginsMin === 0 && filters.failedLoginsMax === 0 ? '0' :
-      filters.failedLoginsMin === 1 && filters.failedLoginsMax === 2 ? '1-2' :
-      filters.failedLoginsMin === 3 && filters.failedLoginsMax === 4 ? '3-4' :
-      filters.failedLoginsMin >= 5 ? '5+' : null;
-
-    if (loginLabel && failedLabel) {
-      return [{ loginAttemptsLabel: loginLabel, failedLoginsLabel: failedLabel }];
-    }
-    return [];
-  }, [filters.loginAttemptsMin, filters.loginAttemptsMax, filters.failedLoginsMin, filters.failedLoginsMax]);
-
-  // No automatic data loading - user must upload CSV
-
-  const handleDataLoaded = useCallback((data: IntrusionData[]) => {
-    setIntrusionData(data);
-    setDataLoaded(true);
-    setLoading(false);
+  useEffect(() => {
+    const loadData = async () => {
+      const data = await loadIntrusionData();
+      setIntrusionData(data);
+      setLoading(false);
+    };
+    loadData();
   }, []);
 
   // Apply filters to data
@@ -242,34 +120,19 @@ export default function Home({
   const behaviorBuckets = useMemo(() => buildBehaviorBuckets(filteredData), [filteredData]);
   const suspiciousSessions = useMemo(() => getSuspiciousSessions(filteredData, 50), [filteredData]);
 
-  if (!dataLoaded || intrusionData.length === 0) {
+  if (loading) {
     return (
-      <>
-        <CSVUploadModal
-          open={uploadModalOpen}
-          onOpenChange={setUploadModalOpen}
-          onDataLoaded={handleDataLoaded}
-          required={true}
-        />
-        <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-          <div className="text-center">
-            <p className="text-slate-300 font-medium mb-4">No data loaded</p>
-            <p className="text-slate-500 text-sm mb-4">Please upload a CSV file to get started</p>
-          </div>
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-sky-500 mb-4"></div>
+          <p className="text-slate-300 font-medium">Loading dashboard data...</p>
         </div>
-      </>
+      </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-50">
-      {/* CSV Upload Modal */}
-      <CSVUploadModal
-        open={uploadModalOpen}
-        onOpenChange={setUploadModalOpen}
-        onDataLoaded={handleDataLoaded}
-      />
-
       {/* Left Sidebar - global filters */}
       <LeftSidebar
         filters={filters}
@@ -301,43 +164,23 @@ export default function Home({
         </header>
 
         {/* Band A/B: Main analytic grid - true bento box layout, each card has independent height */}
-        <section className="px-3 pt-1.5">
+        <section className="px-3 py-1.5 pb-12">
           <div className="grid grid-cols-12 gap-3" style={{ gridAutoRows: 'min-content', alignContent: 'start' }}>
             {/* Each card has its own height - no row stretching */}
             <div className="col-span-6 rounded-lg border border-slate-800 bg-slate-950/70 p-2 min-w-0">
-              <BehaviorHeatmap 
-                data={behaviorBuckets} 
-                selectedCells={selectedBehaviorCells}
-                onCellClick={handleBehaviorCellClick}
-              />
+              <BehaviorHeatmap data={behaviorBuckets} />
             </div>
             <div className="col-span-6 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0">
-              <EncryptionAttackChart 
-                data={encryptionStats} 
-                selectedEncryptions={filters.encryptions}
-                onEncryptionClick={handleEncryptionClick}
-              />
+              <EncryptionAttackChart data={encryptionStats} />
             </div>
             <div className="col-span-4 rounded-lg border border-slate-800 bg-slate-950/70 p-2 min-w-0 mb-2">
-              <ProtocolAttackChart 
-                data={protocolStats} 
-                selectedProtocols={filters.protocols}
-                onProtocolClick={handleProtocolClick}
-              />
+              <ProtocolAttackChart data={protocolStats} />
             </div>
             <div className="col-span-4 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0 mb-2">
-              <BrowserAttackChart 
-                data={browserStats} 
-                selectedBrowsers={filters.browsers}
-                onBrowserClick={handleBrowserClick}
-              />
+              <BrowserAttackChart data={browserStats} />
             </div>
             <div className="col-span-4 rounded-lg border border-slate-900 bg-slate-950/60 p-2 min-w-0 mb-2">
-              <ReputationChart 
-                data={reputationBuckets} 
-                selectedRiskLevel={filters.reputationRisk !== 'all' ? filters.reputationRisk : null}
-                onRiskLevelClick={handleRiskLevelClick}
-              />
+              <ReputationChart data={reputationBuckets} />
             </div>
           </div>
         </section>
